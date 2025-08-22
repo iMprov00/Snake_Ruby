@@ -79,7 +79,6 @@ class Field #класс "поле"
     size_field #создаем массив, который будет полем
     field_boundary #сразу присваиваем границы поля в массиве
     default_position
-    @snake = Snake.new
   end #конец метода
 
   def default_row_column
@@ -106,13 +105,13 @@ class Field #класс "поле"
     1.upto(@column - 2) { |i| @field[i][@row - 1] = "|" }  # последний столбец
   end #конец метода
 
-  def render #отрисовываем поле 
+  def render(label, x, y)#отрисовываем поле 
     puts "\e[H\e[2J" #очищаем экран
 
     0.upto((@column - 1)) do |column|
       0.upto((@row - 1)) do |row|
-        if row == @snake.x && column == @snake.y
-          print @snake.label
+        if row == x && column == y
+          print label
         else
           print @field[column][row]
         end 
@@ -128,7 +127,7 @@ keybord = Game_management.new
 snake = Snake.new
 
 loop do
-  field.render #рисуем поле на экране терминала
+  field.render(snake.label, snake.x, snake.y) #рисуем поле на экране терминала
 
   keybord.management
 
