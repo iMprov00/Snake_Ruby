@@ -62,10 +62,20 @@ class Field #класс "поле"
     "@"
   end
 
-  def postision(x, y)
-    @x += x.to_i
-    @y += y.to_i
+  def postision(y, x)
+      y = @y + y.to_i
+      x = @x + x.to_i
+
+      if y <= 0 || y >= (@column - 1) || x <= 0 || x >= (@column - 1)
+
+      else
+        @y = y
+        @x = x
+      end
+
   end
+
+
 
   def render #отрисовываем поле 
     puts "\e[H\e[2J" #очищаем экран
@@ -74,7 +84,6 @@ class Field #класс "поле"
       0.upto((@row - 1)) do |row|
         if row == @x && column == @y
           print gamer_label
-           
         else
           print @field[column][row]
         end 
@@ -93,6 +102,6 @@ loop do
 
   m.management
 
-  i.postision(m.y, m.x)
+  i.postision(m.x, m.y)
 
 end
