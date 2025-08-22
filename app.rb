@@ -1,8 +1,11 @@
 require 'tty-prompt' #библиотека для управления событиями нажатия с клавиатуры
 
-class Game
+#========================================================= управление игрой
 
-  attr_accessor :y, :x
+
+class Game_management
+
+  attr_reader :y, :x
 
   def management #метод "управление"
     prompt = TTY::Prompt.new #объявляем объект класса
@@ -24,24 +27,74 @@ class Game
     end
 
     prompt.read_keypress == 'q' ? "Конец игры" : true #если нажали q то завершить игру
-  end
+  end #конец метода
 end
 
+#========================================================= класс игровых объектов (змейка, яблоко)
+class Game_objects
+
+  attr_accessor :y, :x
+
+  def initialize
+    default_position
+  end
+
+  def default_position
+    @x = 1
+    @y = 1
+  end #конец метода
+
+  def position(y, x, column)
+      y = @y + y.to_i
+      x = @x + x.to_i
+
+      if y <= 0 || y >= (column - 1) || x <= 0 || x >= (column - 1)
+        
+      else
+        @y = y
+        @x = x
+      end
+  end #конец метода
+end #конец класса
+
+class Snake < Game_objects
+  def label
+    "@"
+  end #конец метода
+end
+
+class Food < Game_objects
+  def label
+    "*"
+  end #конец метода
+end
+
+#========================================================= класс поля
 class Field #класс "поле"
   attr_reader :row, :column, :field #переменные для поля. столбцы, строки и сам массив (поле)
   attr_accessor :y, :x
 
   def initialize
-    @row = 12 #количество столбцов 
-    @column = 12 #количество строк
+    default_row_column
     size_field #создаем массив, который будет полем
     field_boundary #сразу присваиваем границы поля в массиве
     default_position
-  end
+    @snake = Snake.new
+  end #конец метода
+
+  def default_row_column
+    @row = 12 #количество столбцов 
+    @column = 12 #количество строк
+  end #конец метода
+
+  def default_position
+    @x = 1
+    @y = 1
+  end #конец метода
 
   def size_field #размер поля, состоящий из массива
     @field = Array.new(@row){|i| Array.new(@column){" "}}
-  end
+  end #конец метода
 
   def field_boundary #присваиваем гринцы полю
     # Верхняя и нижняя границы
@@ -51,57 +104,33 @@ class Field #класс "поле"
     # Левая и правая границы
     1.upto(@column - 2) { |i| @field[i][0] = "|" }       # первый столбец
     1.upto(@column - 2) { |i| @field[i][@row - 1] = "|" }  # последний столбец
-  end
-
-  def default_position
-    @x = 1
-    @y = 1
-  end
-
-  def gamer_label
-    "@"
-  end
-
-  def postision(y, x)
-      y = @y + y.to_i
-      x = @x + x.to_i
-
-      if y <= 0 || y >= (@column - 1) || x <= 0 || x >= (@column - 1)
-
-      else
-        @y = y
-        @x = x
-      end
-
-  end
-
-
+  end #конец метода
 
   def render #отрисовываем поле 
     puts "\e[H\e[2J" #очищаем экран
 
     0.upto((@column - 1)) do |column|
       0.upto((@row - 1)) do |row|
-        if row == @x && column == @y
-          print gamer_label
+        if row == @snake.x && column == @snake.y
+          print @snake.label
         else
           print @field[column][row]
         end 
       end
       puts
     end
-  end
+  end #конец метода
 
 end
-#отладка
-  i = Field.new #создаем объект класса "поле"
-  m = Game.new
+
+field = Field.new #создаем объект класса "поле"
+keybord = Game_management.new
+snake = Snake.new
 
 loop do
-  i.render #рисуем поле на экране терминала
+  field.render #рисуем поле на экране терминала
 
-  m.management
+  keybord.management
 
-  i.postision(m.x, m.y)
-
+  snake.position(keybord.x, keybord.y, field.column)
 end
