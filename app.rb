@@ -19,10 +19,10 @@ class Game_management
       @y = 0
 
       case event.key.name
-        when :up then @x = -1 
-        when :down then @x = 1
-        when :left then @y = -1
-        when :right then @y = 1
+        when :up then @y = -1 
+        when :down then @y = 1
+        when :left then @x = -1
+        when :right then @x = 1
       end
     end
 
@@ -31,39 +31,52 @@ class Game_management
 end
 
 #========================================================= класс игровых объектов (змейка, яблоко)
-class Game_objects
+class Game_objects #класс игровые объекты. идет как абстрактный класс для змейки и еды 
 
-  attr_accessor :y, :x
+  attr_accessor :y, :x #переменные для определения позиции
 
-  def initialize
+  def initialize #инициализиурем дефолтную позицию при создании объекта
     default_position
   end
 
-  def default_position
+  def default_position #определяем начальную позицию
     @x = 1
     @y = 1
   end #конец метода
 
-  def position(y, x, column)
-      y = @y + y.to_i
+  def position(options={}) #определяем позицию на поле
+      y = options[:y] || 0
+      x = options[:x] || 0
+      column = options[:column] || 0
+
+      y = @y + y.to_i #присваием внутренней переменной значение текущее положение объекта + переданный параметр с клавиатуры (управление)
       x = @x + x.to_i
 
-      if y <= 0 || y >= (column - 1) || x <= 0 || x >= (column - 1)
+      if y <= 0 || y >= (column - 1) || x <= 0 || x >= (column - 1) #провеярем, не выходит ли значение за границы карты
         
-      else
+      else #если не выходит, то присваием публичным переменным значения
         @y = y
         @x = x
       end
   end #конец метода
 end #конец класса
 
-class Snake < Game_objects
-  def label
+class Snake < Game_objects #класс змейки
+  def label #метод объявляющий как выглядит змейка
     "@"
   end #конец метода
 end
 
-class Food < Game_objects
+class Food < Game_objects #класс еды
+
+  def position(options={})
+      column = options[:column] || 0
+
+      @y = rand(1..(column - 1))
+      @x = rand(1..(column - 1))
+
+  end
+
   def label
     "*"
   end #конец метода
@@ -72,7 +85,7 @@ end
 #========================================================= класс поля
 class Field #класс "поле"
   attr_reader :row, :column, :field #переменные для поля. столбцы, строки и сам массив (поле)
-  attr_accessor :y, :x
+  attr_accessor :y, :x #переменные для определения позиции (вероятно стоит убрать)
 
   def initialize
     default_row_column
@@ -105,13 +118,21 @@ class Field #класс "поле"
     1.upto(@column - 2) { |i| @field[i][@row - 1] = "|" }  # последний столбец
   end #конец метода
 
-  def render(label, x, y)#отрисовываем поле 
+  def render(options={})#отрисовываем поле 
+    snake_label = options[:snake_label] || 0
+    snake_x = options[:snake_x] || 0
+    snake_y = options[:snake_y] || 0
+
+    food_label = options[:food_label] || 0
+    food_x = options[:food_x] || 0
+    food_y = options[:food_y] || 0
+
     puts "\e[H\e[2J" #очищаем экран
 
-    0.upto((@column - 1)) do |column|
+    0.upto((@column - 1)) do |column| 
       0.upto((@row - 1)) do |row|
-        if row == x && column == y
-          print label
+        if row == snake_x && column == snake_y
+          print snake_label
         else
           print @field[column][row]
         end 
@@ -122,14 +143,39 @@ class Field #класс "поле"
 
 end
 
+#========================================================= класс статистики
+
+class Game_statistics
+
+  def statistics(options={})
+    size_field = options[:size_field] || 0
+    score = options[:score] || 0
+
+    stat = "Статистика:\nРазмер поля #{size_field} на #{size_field}\nСчет: #{score}"
+  end #конец метода
+
+end #конец класса
+
 field = Field.new #создаем объект класса "поле"
 keybord = Game_management.new
 snake = Snake.new
+food = Food.new
+params_food ={column: field.column}
+food.position
+
+stat = Game_statistics.new 
 
 loop do
-  field.render(snake.label, snake.x, snake.y) #рисуем поле на экране терминала
+  params_field = {snake_label: snake.label, snake_x: snake.x, snake_y: snake.y}
+  field.render(params_field) #рисуем поле на экране терминала
 
-  keybord.management
+  puts
 
-  snake.position(keybord.x, keybord.y, field.column)
+  params_stat = {size_field: field.row}
+  puts stat.statistics(params_stat)
+
+  keybord.management #ждет ввод с клавиатуры пользователем. передаем это в метод    
+
+  params_keybord = {x: keybord.x, y: keybord.y, column: field.column}
+  snake.position(params_keybord) #передаем змейке ввод пользователем, то есть передаем указания куда ей пойти
 end
