@@ -145,13 +145,11 @@ class Field #класс "поле"
       0.upto((@row - 1)) do |row|
         if row == snake_x && column == snake_y
           print snake_label
+        elsif row == food_x && column == food_y
+          print food_label
         else
           print @field[column][row]
         end 
-
-        if row == food_x && column == food_y
-          print food_label
-        end
       end
       puts
     end
