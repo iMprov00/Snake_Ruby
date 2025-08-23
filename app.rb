@@ -66,6 +66,16 @@ class Snake < Game_objects #класс змейки
     "@"
   end #конец метода
 
+  def eat?(options={})
+    snake_x = options[:snake_x] || 0
+    snake_y = options[:snake_y] || 0
+
+    food_x = options[:food_x] || 0
+    food_y = options[:food_y] || 0
+
+    snake_x == food_x && snake_y == food_y ? true : false
+
+  end
 
 end
 
@@ -74,8 +84,8 @@ class Food < Game_objects #класс еды
   def position(options={})
       column = options[:column] || 0
 
-      @y = rand(1..(column - 1))
-      @x = rand(1..(column - 1))
+      @y = rand(1..(column - 2))
+      @x = rand(1..(column - 2))
 
   end
 
@@ -153,9 +163,16 @@ end
 
 class Game_statistics
 
+  attr_reader :score
+
+  def initialize
+    @score = 0
+  end
+
   def statistics(options={})
+
     size_field = options[:size_field] || 0
-    score = options[:score] || 0
+    @score += options[:score] || 0
     snake_x = options[:snake_x] || 0
     snake_y = options[:snake_y] || 0
 
@@ -187,4 +204,9 @@ loop do
   params_keybord = {x: keybord.x, y: keybord.y, column: field.column}
   snake.position(params_keybord) #передаем змейке ввод пользователем, то есть передаем указания куда ей пойти
 
+  params_snake ={snake_x: snake.x, snake_y: snake.y, food_x: food.x, food_y: food.y}
+  if snake.eat?(params_snake) 
+    food.position(params_food) 
+    stat.statistics(score: 1)
+  end
 end
