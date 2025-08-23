@@ -45,7 +45,8 @@ class Game_objects #класс игровые объекты. идет как а
   end #конец метода
 
   def position(options={}) #определяем позицию на поле
-      y = options[:y] || 0
+      y = options[:y] || 0 #таким образом на протяжении всего кода я передаю параметры по средствам хеша. если ничего не передалось, то вернётся 0
+
       x = options[:x] || 0
       column = options[:column] || 0
 
@@ -63,7 +64,7 @@ end #конец класса
 
 class Snake < Game_objects #класс змейки
   def label #метод объявляющий как выглядит змейка
-    "@"
+    "@ "
   end #конец метода
 
   def eat?(options={}) #метод для проверки, съелали змея еду
@@ -90,7 +91,7 @@ class Food < Game_objects #класс еды
   end
 
   def label #метод для отображения еды на карте
-    "*"
+    "* "
   end #конец метода
 end
 
@@ -103,7 +104,6 @@ class Field #класс "поле"
     default_row_column #дефолтный размер поля
     size_field #создаем массив, который будет полем
     field_boundary #сразу присваиваем границы поля в массиве
-    
   end #конец метода
 
   def default_row_column
@@ -111,16 +111,14 @@ class Field #класс "поле"
     @column = 12 #количество строк
   end #конец метода
 
-
-
   def size_field #размер поля, состоящий из массива
     @field = Array.new(@row){|i| Array.new(@column){" "}}
   end #конец метода
 
   def field_boundary #присваиваем гринцы полю
     # Верхняя и нижняя границы
-    0.upto(@row - 1) { |j| @field[0][j] = "-" }       # первая строка
-    0.upto(@row - 1) { |j| @field[@column - 1][j] = "-" }  # последняя строка
+    0.upto(@row - 1) { |j| @field[0][j] = "_" }       # первая строка
+    0.upto(@row - 1) { |j| @field[@column - 1][j] = "_" }  # последняя строка
 
     # Левая и правая границы
     1.upto(@column - 2) { |i| @field[i][0] = "|" }       # первый столбец
@@ -138,14 +136,14 @@ class Field #класс "поле"
 
     puts "\e[H\e[2J" #очищаем экран
 
-    0.upto((@column - 1)) do |column| 
+    0.upto((@column - 1)) do |column| #проходимся по каждоу элементу поля с верху вниз
       0.upto((@row - 1)) do |row|
-        if row == snake_x && column == snake_y
+        if row == snake_x && column == snake_y #устанавливем змейку на то место поля, которому соответствуют координаты
           print snake_label
-        elsif row == food_x && column == food_y
+        elsif row == food_x && column == food_y #или устанавливаем еду
           print food_label
-        else
-          print @field[column][row]
+        else #или продолжем рисовать поле
+          print "#{@field[column][row]} "
         end 
       end
       puts
@@ -156,15 +154,15 @@ end
 
 #========================================================= класс статистики
 
-class Game_statistics
+class Game_statistics #класс статистики
 
-  attr_reader :score 
-
-  def initialize
+  attr_reader :score #переменная для счета
+ 
+  def initialize #инициализируем дефолтное значение счета
     @score = 0
   end
 
-  def statistics(options={})
+  def statistics(options={}) #метод статистики
 
     size_field = options[:size_field] || 0
     @score += options[:score] || 0
@@ -177,31 +175,31 @@ class Game_statistics
 end #конец класса
 
 field = Field.new #создаем объект класса "поле"
-keybord = Game_management.new
-snake = Snake.new
-food = Food.new
-params_food = {column: field.column}
-food.position(params_food)
+keybord = Game_management.new #создаем объект для управления клавиатуров
+snake = Snake.new #создаем змейку
+food = Food.new #создаем еду
+params_food = {column: field.column} #создаем параметр, который хранит в себе размер столбца (поскольку столбцы и строки одинаковые по размеру, то передаем что-то одно)
+food.position(params_food) #передаем в метол позиции еды этот параметр. передаем мы его для того, чтобы еда не появилась за границей карты
 
-stat = Game_statistics.new 
+stat = Game_statistics.new #создаем объект статистики
 
-loop do
-  params_field = {snake_label: snake.label, snake_x: snake.x, snake_y: snake.y, food_label: food.label, food_x: food.x, food_y: food.y}
-  field.render(params_field) #рисуем поле на экране терминала
+loop do #цикл самой игры
+  params_field = {snake_label: snake.label, snake_x: snake.x, snake_y: snake.y, food_label: food.label, food_x: food.x, food_y: food.y} #создаем параметр поля, куда передаем позицию и изображения еды и змейки
+  field.render(params_field) #рисуем поле на экране и передаем параметры
 
-  puts
+  puts #просто отступ
 
-  params_stat = {size_field: field.row, snake_x: snake.x, snake_y: snake.y}
-  puts stat.statistics(params_stat)
+  params_stat = {size_field: field.row, snake_x: snake.x, snake_y: snake.y} #создаем параметр для статистики
+  puts stat.statistics(params_stat) #отображаем статистику под картой
 
   keybord.management #ждет ввод с клавиатуры пользователем. передаем это в метод    
 
-  params_keybord = {x: keybord.x, y: keybord.y, column: field.column}
+  params_keybord = {x: keybord.x, y: keybord.y, column: field.column} #создаем параметр для ввода с клавиатуры
   snake.position(params_keybord) #передаем змейке ввод пользователем, то есть передаем указания куда ей пойти
 
-  params_snake ={snake_x: snake.x, snake_y: snake.y, food_x: food.x, food_y: food.y}
-  if snake.eat?(params_snake) 
-    food.position(params_food) 
-    stat.statistics(score: 1)
+  params_snake ={snake_x: snake.x, snake_y: snake.y, food_x: food.x, food_y: food.y} #создаем параметры для змейки, чтобы проверить съела ли змейка еду
+  if snake.eat?(params_snake)  #отправляет параметр в метод, который возвращает true если съела или false
+    food.position(params_food)  #обновляем позицию еды
+    stat.statistics(score: 1) #передаем в счет +1
   end
-end
+end #конец цикла
