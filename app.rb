@@ -66,14 +66,14 @@ class Snake < Game_objects #класс змейки
     "@"
   end #конец метода
 
-  def eat?(options={})
+  def eat?(options={}) #метод для проверки, съелали змея еду
     snake_x = options[:snake_x] || 0
     snake_y = options[:snake_y] || 0
 
     food_x = options[:food_x] || 0
     food_y = options[:food_y] || 0
 
-    snake_x == food_x && snake_y == food_y ? true : false
+    snake_x == food_x && snake_y == food_y ? true : false #если координаты змеи и еды одинаковые, то змея съела еду
 
   end
 
@@ -81,7 +81,7 @@ end
 
 class Food < Game_objects #класс еды
 
-  def position(options={})
+  def position(options={}) #метод для установки рандомной позиции еды на карте
       column = options[:column] || 0
 
       @y = rand(1..(column - 2))
@@ -89,7 +89,7 @@ class Food < Game_objects #класс еды
 
   end
 
-  def label
+  def label #метод для отображения еды на карте
     "*"
   end #конец метода
 end
@@ -100,10 +100,10 @@ class Field #класс "поле"
   attr_accessor :y, :x #переменные для определения позиции (вероятно стоит убрать)
 
   def initialize
-    default_row_column
+    default_row_column #дефолтный размер поля
     size_field #создаем массив, который будет полем
     field_boundary #сразу присваиваем границы поля в массиве
-    default_position
+    
   end #конец метода
 
   def default_row_column
@@ -111,10 +111,7 @@ class Field #класс "поле"
     @column = 12 #количество строк
   end #конец метода
 
-  def default_position
-    @x = 1
-    @y = 1
-  end #конец метода
+
 
   def size_field #размер поля, состоящий из массива
     @field = Array.new(@row){|i| Array.new(@column){" "}}
@@ -161,7 +158,7 @@ end
 
 class Game_statistics
 
-  attr_reader :score
+  attr_reader :score 
 
   def initialize
     @score = 0
