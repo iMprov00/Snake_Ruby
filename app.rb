@@ -65,6 +65,8 @@ class Snake < Game_objects #класс змейки
   def label #метод объявляющий как выглядит змейка
     "@"
   end #конец метода
+
+
 end
 
 class Food < Game_objects #класс еды
@@ -136,6 +138,10 @@ class Field #класс "поле"
         else
           print @field[column][row]
         end 
+
+        if row == food_x && column == food_y
+          print food_label
+        end
       end
       puts
     end
@@ -150,8 +156,10 @@ class Game_statistics
   def statistics(options={})
     size_field = options[:size_field] || 0
     score = options[:score] || 0
+    snake_x = options[:snake_x] || 0
+    snake_y = options[:snake_y] || 0
 
-    stat = "Статистика:\nРазмер поля #{size_field} на #{size_field}\nСчет: #{score}"
+    stat = "Статистика:\nРазмер поля #{(size_field - 2)} на #{(size_field - 2)}\nСчет: #{score}\nПоложение x:#{snake_x} y:#{snake_y}"
   end #конец метода
 
 end #конец класса
@@ -160,22 +168,23 @@ field = Field.new #создаем объект класса "поле"
 keybord = Game_management.new
 snake = Snake.new
 food = Food.new
-params_food ={column: field.column}
-food.position
+params_food = {column: field.column}
+food.position(params_food)
 
 stat = Game_statistics.new 
 
 loop do
-  params_field = {snake_label: snake.label, snake_x: snake.x, snake_y: snake.y}
+  params_field = {snake_label: snake.label, snake_x: snake.x, snake_y: snake.y, food_label: food.label, food_x: food.x, food_y: food.y}
   field.render(params_field) #рисуем поле на экране терминала
 
   puts
 
-  params_stat = {size_field: field.row}
+  params_stat = {size_field: field.row, snake_x: snake.x, snake_y: snake.y}
   puts stat.statistics(params_stat)
 
   keybord.management #ждет ввод с клавиатуры пользователем. передаем это в метод    
 
   params_keybord = {x: keybord.x, y: keybord.y, column: field.column}
   snake.position(params_keybord) #передаем змейке ввод пользователем, то есть передаем указания куда ей пойти
+
 end
