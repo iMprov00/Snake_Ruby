@@ -44,6 +44,24 @@ class Game_objects #класс игровые объекты. идет как а
     @y = 1
   end #конец метода
 
+
+end #конец класса
+
+class Snake < Game_objects #класс змейки
+  def label #метод объявляющий как выглядит змейка
+    "@ "
+  end #конец метода
+
+  def eat?(options={}) #метод для проверки, съелали змея еду
+    snake_x = options[:snake_x] || 0
+    snake_y = options[:snake_y] || 0
+
+    food_x = options[:food_x] || 0
+    food_y = options[:food_y] || 0
+
+    snake_x == food_x && snake_y == food_y ? true : false #если координаты змеи и еды одинаковые, то змея съела еду
+  end
+
   def position(options={}) #определяем позицию на поле
       y = options[:y] || 0 #таким образом на протяжении всего кода я передаю параметры по средствам хеша. если ничего не передалось, то вернётся 0
 
@@ -60,24 +78,6 @@ class Game_objects #класс игровые объекты. идет как а
         @x = x
       end
   end #конец метода
-end #конец класса
-
-class Snake < Game_objects #класс змейки
-  def label #метод объявляющий как выглядит змейка
-    "@ "
-  end #конец метода
-
-  def eat?(options={}) #метод для проверки, съелали змея еду
-    snake_x = options[:snake_x] || 0
-    snake_y = options[:snake_y] || 0
-
-    food_x = options[:food_x] || 0
-    food_y = options[:food_y] || 0
-
-    snake_x == food_x && snake_y == food_y ? true : false #если координаты змеи и еды одинаковые, то змея съела еду
-
-  end
-
 end
 
 class Food < Game_objects #класс еды
@@ -117,8 +117,8 @@ class Field #класс "поле"
 
   def field_boundary #присваиваем гринцы полю
     # Верхняя и нижняя границы
-    0.upto(@row - 1) { |j| @field[0][j] = "_" }       # первая строка
-    0.upto(@row - 1) { |j| @field[@column - 1][j] = "_" }  # последняя строка
+    0.upto(@row - 1) { |j| @field[0][j] = "-" }       # первая строка
+    0.upto(@row - 1) { |j| @field[@column - 1][j] = "-" }  # последняя строка
 
     # Левая и правая границы
     1.upto(@column - 2) { |i| @field[i][0] = "|" }       # первый столбец
@@ -179,7 +179,7 @@ keybord = Game_management.new #создаем объект для управле
 snake = Snake.new #создаем змейку
 food = Food.new #создаем еду
 params_food = {column: field.column} #создаем параметр, который хранит в себе размер столбца (поскольку столбцы и строки одинаковые по размеру, то передаем что-то одно)
-food.position(params_food) #передаем в метол позиции еды этот параметр. передаем мы его для того, чтобы еда не появилась за границей карты
+food.position(params_food)
 
 stat = Game_statistics.new #создаем объект статистики
 
