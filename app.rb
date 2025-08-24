@@ -35,31 +35,34 @@ class Game_objects #класс игровые объекты. идет как а
 
   attr_accessor :y, :x #переменные для определения позиции
 
-  def initialize #инициализиурем дефолтную позицию при создании объекта
-    default_position
-  end
-
-  def default_position #определяем начальную позицию
-    @x = 1
-    @y = 1
-  end #конец метода
-
-
 end #конец класса
 
 class Snake < Game_objects #класс змейки
+
+  attr_accessor :snake_position_size
+
+  def initialize 
+    @snake_position_size = [{x: 0, y: 0}]
+    default_position
+
+  end
+
+  def default_position #определяем начальную позицию
+    @snake_position_size[0][:x] = 1
+    @snake_position_size[0][:y] = 1
+  end #конец метода
+
   def label #метод объявляющий как выглядит змейка
     "@ "
   end #конец метода
 
   def eat?(options={}) #метод для проверки, съелали змея еду
-    snake_x = options[:snake_x] || 0
-    snake_y = options[:snake_y] || 0
+    snake_position_size = options[:snake_position_size] || 0
 
     food_x = options[:food_x] || 0
     food_y = options[:food_y] || 0
 
-    snake_x == food_x && snake_y == food_y ? true : false #если координаты змеи и еды одинаковые, то змея съела еду
+    snake_position_size[0][:x] == food_x && snake_position_size[0][:y] == food_y ? true : false #если координаты змеи и еды одинаковые, то змея съела еду
   end
 
   def position(options={}) #определяем позицию на поле
@@ -68,14 +71,14 @@ class Snake < Game_objects #класс змейки
       x = options[:x] || 0
       column = options[:column] || 0
 
-      y = @y + y.to_i #присваием внутренней переменной значение текущее положение объекта + переданный параметр с клавиатуры (управление)
-      x = @x + x.to_i
+      y = @snake_position_size[0][:y] + y.to_i #присваием внутренней переменной значение текущее положение объекта + переданный параметр с клавиатуры (управление)
+      x = @snake_position_size[0][:x] + x.to_i
 
       if y <= 0 || y >= (column - 1) || x <= 0 || x >= (column - 1) #провеярем, не выходит ли значение за границы карты
         
       else #если не выходит, то присваием публичным переменным значения
-        @y = y
-        @x = x
+        @snake_position_size[0][:y] = y
+        @snake_position_size[0][:x] = x
       end
   end #конец метода
 end
@@ -127,8 +130,7 @@ class Field #класс "поле"
 
   def render(options={})#отрисовываем поле 
     snake_label = options[:snake_label] || 0
-    snake_x = options[:snake_x] || 0
-    snake_y = options[:snake_y] || 0
+    snake_position_size = options[:snake_position_size] || 0
 
     food_label = options[:food_label] || 0
     food_x = options[:food_x] || 0
@@ -138,13 +140,15 @@ class Field #класс "поле"
 
     0.upto((@column - 1)) do |column| #проходимся по каждоу элементу поля с верху вниз
       0.upto((@row - 1)) do |row|
-        if row == snake_x && column == snake_y #устанавливем змейку на то место поля, которому соответствуют координаты
-          print snake_label
-        elsif row == food_x && column == food_y #или устанавливаем еду
-          print food_label
-        else #или продолжем рисовать поле
-          print "#{@field[column][row]} "
-        end 
+        snake_position_size.each do |snake_postition|
+          if row == snake_postition[:x] && column == snake_postition[:y] #устанавливем змейку на то место поля, которому соответствуют координаты
+            print snake_label
+          elsif row == food_x && column == food_y #или устанавливаем еду
+            print food_label
+          else #или продолжем рисовать поле
+            print "#{@field[column][row]} "
+          end
+        end
       end
       puts
     end
@@ -166,10 +170,9 @@ class Game_statistics #класс статистики
 
     size_field = options[:size_field] || 0
     @score += options[:score] || 0
-    snake_x = options[:snake_x] || 0
-    snake_y = options[:snake_y] || 0
+    snake_position_size = options[:snake_position_size] || 0
 
-    stat = "Статистика:\nРазмер поля #{(size_field - 2)} на #{(size_field - 2)}\nСчет: #{score}\nПоложение x:#{snake_x} y:#{snake_y}"
+    #stat = "Статистика:\nРазмер поля #{(size_field - 2)} на #{(size_field - 2)}\nСчет: #{score}\nПоложение x:#{snake_position_size[0][:x]} y:#{snake_position_size[0][:y]}"
   end #конец метода
 
 end #конец класса
@@ -184,12 +187,12 @@ food.position(params_food)
 stat = Game_statistics.new #создаем объект статистики
 
 loop do #цикл самой игры
-  params_field = {snake_label: snake.label, snake_x: snake.x, snake_y: snake.y, food_label: food.label, food_x: food.x, food_y: food.y} #создаем параметр поля, куда передаем позицию и изображения еды и змейки
+  params_field = {snake_label: snake.label, snake_position_size: snake.snake_position_size, food_label: food.label, food_x: food.x, food_y: food.y} #создаем параметр поля, куда передаем позицию и изображения еды и змейки
   field.render(params_field) #рисуем поле на экране и передаем параметры
 
   puts #просто отступ
 
-  params_stat = {size_field: field.row, snake_x: snake.x, snake_y: snake.y} #создаем параметр для статистики
+  params_stat = {size_field: field.row, snake_position_size: snake.snake_position_size} #создаем параметр для статистики
   puts stat.statistics(params_stat) #отображаем статистику под картой
 
   keybord.management #ждет ввод с клавиатуры пользователем. передаем это в метод    
@@ -197,7 +200,7 @@ loop do #цикл самой игры
   params_keybord = {x: keybord.x, y: keybord.y, column: field.column} #создаем параметр для ввода с клавиатуры
   snake.position(params_keybord) #передаем змейке ввод пользователем, то есть передаем указания куда ей пойти
 
-  params_snake ={snake_x: snake.x, snake_y: snake.y, food_x: food.x, food_y: food.y} #создаем параметры для змейки, чтобы проверить съела ли змейка еду
+  params_snake ={snake_position_size: snake.snake_position_size, food_x: food.x, food_y: food.y} #создаем параметры для змейки, чтобы проверить съела ли змейка еду
   if snake.eat?(params_snake)  #отправляет параметр в метод, который возвращает true если съела или false
     food.position(params_food)  #обновляем позицию еды
     stat.statistics(score: 1) #передаем в счет +1
